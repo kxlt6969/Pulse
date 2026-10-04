@@ -1,27 +1,130 @@
-"""Color palette and the global QSS stylesheet for Pulse."""
+# colors + the stylesheet. everything visual that isn't painted lives here.
+# stylesheet() does token replacement on _TEMPLATE using the current globals,
+# so switching themes is: use_light() / use_dark() + re-apply the stylesheet.
 
-BG = "#0B0F17"
-CARD = "#101826"
-CARD_BORDER = "#1D2A3A"
-TEXT = "#E6EAF2"
-MUTED = "#8B96A8"
-FAINT = "#5F6B7E"
+DARK = {
+    # deep navy, cyan/violet/green accents; tuned by eye, not by a color tool
+    "BG": "#0A0E16",
+    "CARD": "#0F1622",
+    "CARD_TOP": "#131D2D",
+    "CARD_BORDER": "#1E2C3E",
+    "TITLE_TEXT": "#F5F8FD",
+    "TEXT": "#DFE6F0",
+    "MUTED": "#8C99AC",
+    "FAINT": "#647083",
+    "TRACK": "#1C2A40",
+    "CORE_BASE": "#2C3E5C",
+    "CORE_TRACK": "#131D2C",
+    "ALT_ROW": "#121B29",
+    "SEL_BG": "#173B5C",
+    "SEL_TEXT": "#F5F8FD",
+    "CHIP_BG": "#151F2F",
+    "CHIP_BORDER": "#223046",
+    "CHIP_TEXT": "#A9B6C9",
+    "HEAD_BORDER": "#223046",
+    "BTN_BG": "#1E2C44",
+    "BTN_HOVER": "#28395A",
+    "BTN_PRESS": "#18243A",
+    "END_BORDER": "#4A2A34",
+    "END_HOVER": "#2A1620",
+    "END_PRESS": "#331B26",
+    "END_TEXT": "#F87171",
+    "SCROLL": "#24344E",
+    "SCROLL_HOVER": "#31456A",
+    "STATUS_BORDER": "#17202E",
+    "TOOLTIP_BG": "#101826",
+    "INPUT_BG": "#141E2E",
+    "INPUT_BORDER": "#223046",
+    "CPU": "#22D3EE",
+    "RAM": "#A78BFA",
+    "DISK": "#34D399",
+    "GPU": "#FB923C",
+    "NET_DOWN": "#38BDF8",
+    "NET_UP": "#F472B6",
+    "WARN": "#FBBF24",
+    "DANGER": "#F87171",
+}
 
-CPU = "#22D3EE"
-RAM = "#A78BFA"
-DISK = "#34D399"
-NET_DOWN = "#38BDF8"
-NET_UP = "#F472B6"
-WARN = "#FBBF24"
-DANGER = "#F87171"
+LIGHT = {
+    "BG": "#EEF2F8",
+    "CARD": "#F6F9FC",
+    "CARD_TOP": "#FFFFFF",
+    "CARD_BORDER": "#DCE3ED",
+    "TITLE_TEXT": "#0E1726",
+    "TEXT": "#1E293B",
+    "MUTED": "#5F6E85",
+    "FAINT": "#8391A5",
+    "TRACK": "#DFE7F1",
+    "CORE_BASE": "#B3C2D8",
+    "CORE_TRACK": "#E8EEF6",
+    "ALT_ROW": "#F4F7FB",
+    "SEL_BG": "#D7E9FA",
+    "SEL_TEXT": "#0E1726",
+    "CHIP_BG": "#F0F4F9",
+    "CHIP_BORDER": "#E0E6EF",
+    "CHIP_TEXT": "#475468",
+    "HEAD_BORDER": "#E0E6EF",
+    "BTN_BG": "#E1E8F1",
+    "BTN_HOVER": "#D2DCE9",
+    "BTN_PRESS": "#C4D1E1",
+    "END_BORDER": "#F0C9C9",
+    "END_HOVER": "#FBE9E9",
+    "END_PRESS": "#F5D6D6",
+    "END_TEXT": "#C93A3A",
+    "SCROLL": "#C3D0E0",
+    "SCROLL_HOVER": "#A8BAD0",
+    "STATUS_BORDER": "#E0E6EF",
+    "TOOLTIP_BG": "#FFFFFF",
+    "INPUT_BG": "#F7FAFD",
+    "INPUT_BORDER": "#D5DEE9",
+    # same hues as dark but darkened to hold up on paper white
+    "CPU": "#0891B2",
+    "RAM": "#7C3AED",
+    "DISK": "#059669",
+    "GPU": "#EA580C",
+    "NET_DOWN": "#0284C7",
+    "NET_UP": "#DB2777",
+    "WARN": "#B45309",
+    "DANGER": "#DC2626",
+}
 
-STYLESHEET = """
+globals().update(DARK)
+
+_is_dark = True
+
+
+def use_dark():
+    global _is_dark
+    _is_dark = True
+    globals().update(DARK)
+
+
+def use_light():
+    global _is_dark
+    _is_dark = False
+    globals().update(LIGHT)
+
+
+def is_dark():
+    return _is_dark
+
+
+def stylesheet():
+    sheet = _TEMPLATE
+    # longest keys first; replacing @CARD before @CARD_BORDER would
+    # leave '#0F1622_BORDER' in the sheet and qt complains on stderr
+    for key in sorted(DARK, key=len, reverse=True):
+        sheet = sheet.replace("@" + key, globals()[key])
+    return sheet
+
+
+_TEMPLATE = """
 QMainWindow, QDialog {
-    background: #0B0F17;
+    background: @BG;
 }
 
 QWidget {
-    color: #E6EAF2;
+    color: @TEXT;
     font-size: 13px;
 }
 
@@ -32,62 +135,59 @@ QLabel {
 QLabel#appTitle {
     font-size: 21px;
     font-weight: 800;
-    color: #F4F7FC;
+    color: @TITLE_TEXT;
 }
 
 QLabel#appSubtitle {
-    color: #8B96A8;
+    color: @MUTED;
     font-size: 12px;
 }
 
 QLabel#chip {
-    background: #141E2C;
-    border: 1px solid #1F2B3C;
+    background: @CHIP_BG;
+    border: 1px solid @CHIP_BORDER;
     border-radius: 10px;
     padding: 5px 12px;
-    color: #A9B4C6;
+    color: @CHIP_TEXT;
     font-size: 12px;
 }
 
 QLabel#cardTitle {
-    color: #7C8AA0;
+    color: @FAINT;
     font-size: 11px;
     font-weight: 700;
+    letter-spacing: 1px;
 }
 
 QLabel#cardSub {
-    color: #5F6B7E;
+    color: @FAINT;
     font-size: 11px;
 }
 
 QLabel#subValue {
-    color: #8B96A8;
+    color: @MUTED;
     font-size: 12px;
 }
 
 QLabel#netValue {
     font-size: 20px;
     font-weight: 700;
-    color: #F4F7FC;
-}
-
-QLabel#netLabel {
-    color: #8B96A8;
-    font-size: 11px;
+    color: @TITLE_TEXT;
 }
 
 QFrame#card {
-    background: #101826;
-    border: 1px solid #1D2A3A;
-    border-radius: 16px;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 @CARD_TOP, stop:1 @CARD);
+    border: 1px solid @CARD_BORDER;
+    border-radius: 14px;
 }
 
 QTableWidget {
     background: transparent;
     border: none;
-    alternate-background-color: #121B29;
-    selection-background-color: #16324D;
-    selection-color: #F4F7FC;
+    alternate-background-color: @ALT_ROW;
+    selection-background-color: @SEL_BG;
+    selection-color: @SEL_TEXT;
     font-size: 12.5px;
 }
 
@@ -97,7 +197,7 @@ QTableWidget::item {
 }
 
 QTableWidget::item:selected {
-    background: #16324D;
+    background: @SEL_BG;
 }
 
 QHeaderView {
@@ -106,9 +206,9 @@ QHeaderView {
 
 QHeaderView::section {
     background: transparent;
-    color: #7C8AA0;
+    color: @FAINT;
     border: none;
-    border-bottom: 1px solid #1F2B3C;
+    border-bottom: 1px solid @HEAD_BORDER;
     padding: 8px 10px;
     font-size: 11px;
     font-weight: 700;
@@ -120,16 +220,16 @@ QTableCornerButton::section {
 }
 
 QComboBox {
-    background: #141E2C;
-    border: 1px solid #1F2B3C;
+    background: @CHIP_BG;
+    border: 1px solid @CHIP_BORDER;
     border-radius: 8px;
     padding: 4px 10px;
-    color: #A9B4C6;
+    color: @CHIP_TEXT;
     font-size: 12px;
 }
 
 QComboBox:hover {
-    border-color: #2C3E58;
+    border-color: @SCROLL;
 }
 
 QComboBox::drop-down {
@@ -144,19 +244,33 @@ QComboBox::down-arrow {
     height: 0;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
-    border-top: 5px solid #8B96A8;
+    border-top: 5px solid @MUTED;
 }
 
 QComboBox QAbstractItemView {
-    background: #101826;
-    border: 1px solid #1F2B3C;
-    color: #E6EAF2;
-    selection-background-color: #16324D;
+    background: @CARD;
+    border: 1px solid @CHIP_BORDER;
+    color: @TEXT;
+    selection-background-color: @SEL_BG;
+}
+
+QLineEdit {
+    background: @INPUT_BG;
+    border: 1px solid @INPUT_BORDER;
+    border-radius: 8px;
+    padding: 5px 10px;
+    color: @TEXT;
+    font-size: 12px;
+    selection-background-color: @SEL_BG;
+}
+
+QLineEdit:focus {
+    border-color: @SCROLL;
 }
 
 QPushButton {
-    background: #1C2941;
-    color: #E6EAF2;
+    background: @BTN_BG;
+    color: @TEXT;
     border: none;
     border-radius: 9px;
     padding: 7px 16px;
@@ -165,43 +279,57 @@ QPushButton {
 }
 
 QPushButton:hover {
-    background: #253453;
+    background: @BTN_HOVER;
 }
 
 QPushButton:pressed {
-    background: #16223A;
+    background: @BTN_PRESS;
 }
 
 QPushButton:disabled {
-    color: #5F6B7E;
-    background: #131C2B;
+    color: @FAINT;
+    background: @ALT_ROW;
+}
+
+QPushButton#ghost {
+    background: @CHIP_BG;
+    border: 1px solid @CHIP_BORDER;
+    color: @CHIP_TEXT;
+    border-radius: 10px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+QPushButton#ghost:hover {
+    background: @BTN_HOVER;
 }
 
 QPushButton#endTask {
     background: transparent;
-    border: 1px solid #4A2A34;
-    color: #F87171;
+    border: 1px solid @END_BORDER;
+    color: @END_TEXT;
 }
 
 QPushButton#endTask:hover {
-    background: #2A1620;
+    background: @END_HOVER;
 }
 
 QPushButton#endTask:pressed {
-    background: #331B26;
+    background: @END_PRESS;
 }
 
 QPushButton#endTask:disabled {
-    color: #5F6B7E;
-    border-color: #1F2B3C;
+    color: @FAINT;
+    border-color: @CHIP_BORDER;
     background: transparent;
 }
 
 QStatusBar {
     background: transparent;
-    color: #5F6B7E;
+    color: @FAINT;
     font-size: 11.5px;
-    border-top: 1px solid #16202E;
+    border-top: 1px solid @STATUS_BORDER;
 }
 
 QStatusBar::item {
@@ -215,13 +343,13 @@ QScrollBar:vertical {
 }
 
 QScrollBar::handle:vertical {
-    background: #223047;
+    background: @SCROLL;
     border-radius: 5px;
     min-height: 30px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background: #2E3F5C;
+    background: @SCROLL_HOVER;
 }
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
@@ -240,7 +368,7 @@ QScrollBar:horizontal {
 }
 
 QScrollBar::handle:horizontal {
-    background: #223047;
+    background: @SCROLL;
     border-radius: 5px;
     min-width: 30px;
 }
@@ -255,9 +383,9 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
 }
 
 QToolTip {
-    background: #101826;
-    color: #E6EAF2;
-    border: 1px solid #1F2B3C;
+    background: @TOOLTIP_BG;
+    color: @TEXT;
+    border: 1px solid @CHIP_BORDER;
     padding: 5px 8px;
     border-radius: 6px;
 }

@@ -6,7 +6,6 @@ def human_bytes(value):
                 return f"{int(value)} B"
             return f"{value:.1f} {unit}"
         value /= 1024.0
-    return f"{value:.1f} PB"
 
 
 def human_speed(bytes_per_second):
